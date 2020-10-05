@@ -5,33 +5,33 @@
 ! Find the element volume integral
 !-----------------------------------------------------------------------
 
-SUBROUTINE volume_integral(lduh, lqhi, lFhi)
-        USE ader_dg
-        IMPLICIT NONE
-        ! Argument list
-        DOUBLE PRECISION, INTENT(IN)  :: lqhi(nVar,nDOF(1),nDOF(2))      ! space-time degrees of freedom
-        DOUBLE PRECISION, INTENT(IN)  :: lFhi(nVar,nDim,nDOF(1),nDOF(2)) ! nonlinear flux tensor in each space-time DOF
-        DOUBLE PRECISION, INTENT(OUT) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
+subroutine volume_integral(lduh, lqhi, lFhi)
+    use ader_dg
+    implicit none
+    ! Argument list
+    double precision, intent(in)  :: lqhi(nVar,nDOF(1),nDOF(2))      ! space-time degrees of freedom
+    double precision, intent(in)  :: lFhi(nVar,nDim,nDOF(1),nDOF(2)) ! nonlinear flux tensor in each space-time DOF
+    double precision, intent(out) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
 
-        ! Local variables
-        INTEGER           :: i,j
+    ! Local variables
+    integer           :: i,j
 
-        ! Initialize the update DOF
+    ! Initialize the update DOF
 
-        lduh = 0.0d0
+    lduh = 0.0d0
 
-        ! x - direction
+    ! x - direction
 
-        DO j = 1, nDOF(2)
-            lduh(:,:,j) = lduh(:,:,j) + MATMUL( lFhi(:,1,:,j), TRANSPOSE(Kxi) )*wGPN(j)/dx(1)
-        ENDDO
+    do j = 1, nDOF(2)
+        lduh(:,:,j) = lduh(:,:,j) + matmul( lFhi(:,1,:,j), transpose(Kxi) )*wGPN(j)/dx(1)
+    end do
 
-        ! y - direction
+    ! y - direction
 
-        DO i = 1, nDOF(1)
-            lduh(:,i,:) = lduh(:,i,:) + MATMUL( lFhi(:,2,i,:), TRANSPOSE(Kxi) )*wGPN(i)/dx(2)
-        ENDDO
+    do i = 1, nDOF(1)
+        lduh(:,i,:) = lduh(:,i,:) + matmul( lFhi(:,2,i,:), transpose(Kxi) )*wGPN(i)/dx(2)
+    end do
 
-        CONTINUE
+    continue
 
-END SUBROUTINE volume_integral
+end subroutine volume_integral

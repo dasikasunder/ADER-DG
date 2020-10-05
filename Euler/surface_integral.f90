@@ -5,35 +5,35 @@
 ! Find the surface integral
 !-----------------------------------------------------------------------
 
-SUBROUTINE surface_integral(lduh, lFl, lFr, lGb, lGt)
+subroutine surface_integral(lduh, lFl, lFr, lGb, lGt)
 
-    USE ader_dg
-    IMPLICIT NONE
+    use ader_dg
+    implicit none
     ! Argument list
-    DOUBLE PRECISION, INTENT(IN)    :: lFl(nVar,nDOF(2)), lFr(nVar,nDOF(2)), lGb(nVar,nDOF(1)), lGt(nVar,nDOF(1))
-    DOUBLE PRECISION, INTENT(INOUT) :: lduh(nVar, nDOF(1), nDOF(2))       ! Spatial degrees of freedom
+    double precision, intent(in)    :: lFl(nVar,nDOF(2)), lFr(nVar,nDOF(2)), lGb(nVar,nDOF(1)), lGt(nVar,nDOF(1))
+    double precision, intent(inout) :: lduh(nVar, nDOF(1), nDOF(2))       ! Spatial degrees of freedom
 
     ! Local variables
-    INTEGER           :: i,j,iVar
+    integer           :: i,j,iVar
 
     ! Now multiply the numerical fluxes on the surfaces with the test functions and compute the surface integrals
 
     ! x faces
 
-    DO j = 1, nDOF(2)
-        DO iVar = 1, nVar
+    do j = 1, nDOF(2)
+        do iVar = 1, nVar
             lduh(iVar,:,j) = lduh(iVar,:,j) - &
                 wGPN(j)/dx(1)*( lFr(iVar,j)*FRCoeff - lFl(iVar,j)*FLCoeff )      ! left flux minus right flux
-        ENDDO
-    ENDDO
+        end do
+    end do
 
     ! y faces
 
-    DO i = 1, nDOF(1)
-        DO iVar = 1, nVar
+    do i = 1, nDOF(1)
+        do iVar = 1, nVar
             lduh(iVar,i,:) = lduh(iVar,i,:) - &
             wGPN(i)/dx(2)*( lGt(iVar,i)*FRCoeff - lGb(iVar,i)*FLCoeff )         ! bottom flux minus top flux
-        ENDDO
-    ENDDO
+        end do
+    end do
 
-END SUBROUTINE surface_integral
+end subroutine surface_integral

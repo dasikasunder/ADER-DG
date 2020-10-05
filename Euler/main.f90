@@ -34,10 +34,10 @@ program ADERDG
         print *, ' nRecomp = ', nRecompute, ' t = ', time, 'dt = ', dt
 
         if (N .gt. 0) then
-            call GetMinMax
+            call get_min_max
             recompute(:,:) = 0
             nRecompute   = 0
-            call Saveolduh
+            call save_olduh
         end if
 
         ! ADER predictor step
@@ -87,10 +87,10 @@ program ADERDG
         end do
 
         if ( N .gt. 0 ) then
-            call SpreadRecompute
-            call AllocateLimiter
-            call SubcellRecompute
-            call UpdateLimiter
+            call spread_recompute
+            call allocate_limiter
+            call subcell_recompute
+            call update_limiter
         end if
 
         time = time + dt

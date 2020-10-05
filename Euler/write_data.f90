@@ -5,106 +5,188 @@
 ! Output data in vtk format
 !-----------------------------------------------------------------------
 
-SUBROUTINE write_data
-    USE ader_dg
-    IMPLICIT NONE
+subroutine write_data
+    use ader_dg
+    implicit none
 
-    INTEGER            :: i, j, ii, jj, iVar
-    DOUBLE PRECISION   :: x_c, y_c, Q(nVar), Vav(nVar)
-    CHARACTER(LEN=200) :: Filename
-    INTEGER, PARAMETER :: out_unit = 20
+    integer            :: i, j, ii, jj, iVar
+    double precision   :: x_c, y_c, Q(nVar), Vav(nVar)
+    character(len=200) :: Filename
+    integer, parameter :: out_unit = 20
 
     ! Find the cell average values of primitive variables
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
+    do j = 1, JMAX
+        do i = 1, IMAX
             Q = 0.0d0
 
-            DO iVar = 1, nVar
-                DO jj = 1, nDOF(2)
-                    DO ii = 1, nDOF(1)
+            do iVar = 1, nVar
+                do jj = 1, nDOF(2)
+                    do ii = 1, nDOF(1)
                         Q(iVar) = Q(iVar) + wGPN(ii)*wGPN(jj)*uh(iVar, ii, jj, i, j)
-                    END DO
-                END DO
-            END DO
+                    end do
+                end do
+            end do
 
-            CALL PDECons2Prim(Q, Vav)
+            call PDECons2Prim(Q, Vav)
 
             wh(:,i,j) = Vav
-        ENDDO
-    ENDDO
+        end do
+    end do
 
-    WRITE(FileName,'(a,a1,i8.8,a)') TRIM(BaseFile),'-', timestep, '.vtk'
-    PRINT *, ' Writing data to file ', TRIM(FileName)
+    write(FileName,'(a,a1,i8.8,a)') trim(BaseFile),'-', timestep, '.vtk'
+    print *, ' Writing data to file ', trim(FileName)
 
-    OPEN (UNIT=out_unit, FILE=Filename)
+    open (unit=out_unit, file=Filename)
 
-    WRITE(out_unit, '(A)') '# vtk DataFile Version 2.0'
-    WRITE(out_unit, '(A)') '2D Euler'
-    WRITE(out_unit, '(A)') 'ASCII'
-    WRITE(out_unit, '(A)') 'DATASET STRUCTURED_GRID'
-    WRITE(out_unit, '(A)') 'FIELD FieldData 1'
-    WRITE(out_unit, '(A)') 'TIME 1 1 double'
-    WRITE(out_unit, '(E15.9)')  time
-    WRITE(out_unit, '(A, I5, I5, I5)') 'DIMENSIONS ', IMAX, JMAX, 1
-    WRITE(out_unit, '(A, I10, A)') 'POINTS ', IMAX*JMAX, ' double'
+    write(out_unit, '(a)') '# vtk DataFile Version 2.0'
+    write(out_unit, '(a)') '2D Euler'
+    write(out_unit, '(a)') 'ASCII'
+    write(out_unit, '(a)') 'DATASET STRUCTURED_GRID'
+    write(out_unit, '(a)') 'FIELD FieldData 1'
+    write(out_unit, '(a)') 'TIME 1 1 double'
+    write(out_unit, '(e15.9)')  time
+    write(out_unit, '(a, i5, i5, i5)') 'DIMENSIONS ', IMAX, JMAX, 1
+    write(out_unit, '(a, i10, a)') 'POINTS ', IMAX*JMAX, ' double'
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
+    do j = 1, JMAX
+        do i = 1, IMAX
             x_c = xL(1) + (DBLE(i)-0.5)*dx(1)
             y_c = xL(2) + (DBLE(j)-0.5)*dx(2)
-            WRITE(out_unit, '(E15.7, E15.7, E15.7)')  x_c, y_c, 0.0
-        ENDDO
-    ENDDO
+            write(out_unit, '(E15.7, E15.7, E15.7)')  x_c, y_c, 0.0
+        end do
+    end do
 
     ! Plot density
 
-    WRITE(out_unit, '(A, I10)') 'POINT_DATA', JMAX*IMAX
-    WRITE(out_unit, '(A)') 'SCALARS Density double 1'
-    WRITE(out_unit, '(A)') 'LOOKUP_TABLE default'
+    write(out_unit, '(a, i10)') 'POINT_DATA', JMAX*IMAX
+    write(out_unit, '(a)') 'SCALARS Density double 1'
+    write(out_unit, '(a)') 'LOOKUP_TABLE default'
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
-            WRITE(out_unit, '(E15.7)')  wh(1,i,j)
-        ENDDO
-    ENDDO
+    do j = 1, JMAX
+        do i = 1, IMAX
+            write(out_unit, '(e15.7)')  wh(1,i,j)
+        end do
+    end do
 
     ! Plot velocity
 
-    WRITE(out_unit, '(A)') 'VECTORS Velocity double'
+    write(out_unit, '(a)') 'VECTORS Velocity double'
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
-            WRITE(out_unit, '(E15.7, E15.7, E15.7)')  wh(2,i,j), wh(3,i,j), 0.0
-        ENDDO
-    ENDDO
+    do j = 1, JMAX
+        do i = 1, IMAX
+            write(out_unit, '(e15.7, e15.7, e15.7)')  wh(2,i,j), wh(3,i,j), 0.0
+        end do
+    end do
 
     ! Plot pressure
 
-    WRITE(out_unit, '(A)') 'SCALARS Pressure double 1'
-    WRITE(out_unit, '(A)') 'LOOKUP_TABLE default'
+    write(out_unit, '(a)') 'SCALARS Pressure double 1'
+    write(out_unit, '(a)') 'LOOKUP_TABLE default'
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
-            WRITE(out_unit, '(E15.7)')  wh(4,i,j)
-        ENDDO
-    ENDDO
+    do j = 1, JMAX
+        do i = 1, IMAX
+            write(out_unit, '(e15.7)')  wh(4,i,j)
+        end do
+    end do
 
-    ! Plot Troubled cells
+    close(out_unit)
 
-    WRITE(out_unit, '(A)') 'SCALARS T_cells double 1'
-    WRITE(out_unit, '(A)') 'LOOKUP_TABLE default'
+end subroutine write_data
 
-    DO j = 1, JMAX
-        DO i = 1, IMAX
-            IF (recompute(i,j) .EQ. 1) THEN
-                WRITE(out_unit, '(E15.7)')  1.0d0
-            ELSE
-                WRITE(out_unit, '(E15.7)')  0.0d0
-            END IF
-        END DO
-    END DO
+!-----------------------------------------------------------------------
+! Plot the troubled cells in vtk (unstructured data) format
+!-----------------------------------------------------------------------
 
-    CLOSE(out_unit)
+subroutine plot_troubled_cells
+    use ader_dg
+    implicit none
+    ! Local variables
+    double precision, pointer :: xnode(:,:)
+    integer, pointer :: tri(:,:), idxn(:,:), idxe(:,:)
+    integer :: i, j, counter
+    character(len=200) :: Filename
+    integer, parameter :: out_unit = 25
 
-END SUBROUTINE write_data
+    allocate( xnode(nDim, nNode)) ! Allocate the nodes
+    allocate( idxn(IMAX+1,JMAX+1)  )
+    allocate( tri(4, nElem)     )
+    allocate( idxe(IMAX,JMAX) )
+
+    ! Define the node coordinates and the node numbers
+
+    counter = 0
+
+    do j = 1, JMAX+1
+        do i = 1, IMAX+1
+                counter = counter + 1
+                xnode(:,counter) = xL(:) + (/ i-1, j-1/)*dx(:)
+                idxn(i,j) = counter
+        end do
+    end do
+
+    ! Define the connectivity between the elements and the nodes
+
+    counter = 0
+
+    do j = 1, JMAX
+        do i = 1, IMAX
+            counter = counter + 1
+            idxe(i,j) = counter
+            tri(:,counter) = (/ idxn(i,j), idxn(i+1,j), idxn(i,j+1), idxn(i+1,j+1) /)
+        end do
+    end do
+
+    write(FileName,'(a,a1,i8.8,a)') 'Tcells','-', timestep, '.vtk'
+
+    open (unit=out_unit, file=Filename)
+
+    write(out_unit, '(a)') '# vtk DataFile Version 2.0'
+    write(out_unit, '(a)') '2D Euler'
+    write(out_unit, '(a)') 'ASCII'
+    write(out_unit, '(a)') 'DATASET UNSTRUCTURED_GRID'
+    write(out_unit, '(a)') 'FIELD FieldData 1'
+    write(out_unit, '(a)') 'TIME 1 1 double'
+    write(out_unit, '(e15.9)')  time
+    write(out_unit, '(a, i10, a)') 'POINTS ', nNode, ' double'
+
+    do i = 1, nNode
+        write(out_unit, '(e15.7, e15.7, e15.7)')  xnode(1,i), xnode(2,i), 0.0
+    end do
+
+    write(out_unit, '(a, i10, i10)') 'CELLS ', nElem, nElem*5
+
+    do i = 1, nElem
+        write(out_unit, '(i10, i10, i10, i10, i10)')  4, tri(1,i)-1, tri(2,i)-1, tri(4,i)-1, tri(3,i)-1
+    end do
+
+    write(out_unit, '(a, i10, i10)') 'CELL_TYPES ', nElem
+
+    do i = 1, nElem
+        write(out_unit, '(i5)')  9
+    end do
+
+    write(out_unit, '(a, i10)') 'CELL_DATA', nElem
+    write(out_unit, '(a)') 'SCALARS TCells double 1'
+    write(out_unit, '(a)') 'LOOKUP_TABLE default'
+
+    do j = 1, JMAX
+        do i = 1, IMAX
+            if (recompute(i,j) .eq. 1) then
+                write(out_unit, '(e15.7)')  2.0d0
+            else if (recompute(i,j) .eq. 2) then
+                write(out_unit, '(e15.7)')  1.0d0
+            else
+                write(out_unit, '(e15.7)')  0.0d0
+            end if
+       end do
+    end do
+
+    deallocate( xnode)
+    deallocate( idxn  )
+    deallocate( tri     )
+    deallocate( idxe )
+
+    close(out_unit)
+
+end subroutine plot_troubled_cells

@@ -14,7 +14,7 @@ module ader_dg
     ! Can be modified by the user
     ! ---------------------------------------------------------------------------------------------------------
 
-    integer, parameter          :: N = 2      ! Polynomial degree of our approximation in space and time
+    integer, parameter          :: N = 1      ! Polynomial degree of our approximation in space and time
     integer, parameter          :: nDim = 2   ! The number of space dimensions that we actually want to simulate
     double precision, parameter :: CFL = 0.9  ! The Courant-Friedrichs-Lewy number < 1
     integer, parameter          :: nVar = 4   ! The number of variables of the PDE system
