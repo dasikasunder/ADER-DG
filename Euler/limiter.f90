@@ -122,20 +122,20 @@ subroutine get_min_max
 
                 do iVar = 1, nVar
 
-                    Limiter(i,j)%lmin_old(iVar) = MIN( MINVAL(uh(iVar,1:nDOF(1),1:nDOF(2),i,j)), &
-                                                   MINVAL(lob(iVar,1:nDOF(1),1:nDOF(2))), &
-                                                   MINVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))) )
+                    Limiter(i,j)%lmin_old(iVar) = min( minval(uh(iVar,1:nDOF(1),1:nDOF(2),i,j)), &
+                                                   minval(lob(iVar,1:nDOF(1),1:nDOF(2))), &
+                                                   minval(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))) )
 
-                    Limiter(i,j)%lmax_old(iVar) = MAX( MAXVAL(uh(iVar,1:nDOF(1),1:nDOF(2),i,j)), &
-                                                   MAXVAL(lob(iVar,1:nDOF(1),1:nDOF(2))), &
-                                                   MAXVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))) )
+                    Limiter(i,j)%lmax_old(iVar) = max( maxval(uh(iVar,1:nDOF(1),1:nDOF(2),i,j)), &
+                                                   maxval(lob(iVar,1:nDOF(1),1:nDOF(2))), &
+                                                   maxval(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))) )
 
                 end do
             else
                 lim = Limiter(i,j)%Lh
                 do iVar = 1, nVar
-                    Limiter(i,j)%lmin_old(iVar) = MINVAL( lim(iVar,1:nSubLimV(1),1:nSubLimV(2)) )
-                    Limiter(i,j)%lmax_old(iVar) = MAXVAL( lim(iVar,1:nSubLimV(1),1:nSubLimV(2)) )
+                    Limiter(i,j)%lmin_old(iVar) = minval( lim(iVar,1:nSubLimV(1),1:nSubLimV(2)) )
+                    Limiter(i,j)%lmax_old(iVar) = maxval( lim(iVar,1:nSubLimV(1),1:nSubLimV(2)) )
                 end do
             end if
 
@@ -199,13 +199,13 @@ subroutine DMP(dmpresult,arguh,argLimiter,argmax)
 
         if (iVar .gt. 0) then
 
-            lmin(iVar) = min( MINVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
-                            MINVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
-                            MINVAL(lob(iVar,1:nDOF(1),1:nDOF(2))) )
+            lmin(iVar) = min( minval(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
+                            minval(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
+                            minval(lob(iVar,1:nDOF(1),1:nDOF(2))) )
 
-            lmax(iVar) = max( MAXVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
-                            MAXVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
-                            MAXVAL(lob(iVar,1:nDOF(1),1:nDOF(2))) )
+            lmax(iVar) = max( maxval(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
+                            maxval(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
+                            maxval(lob(iVar,1:nDOF(1),1:nDOF(2))) )
 
             ldiff = max( 1.0e-4, 1.0e-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)), argmax )
 
