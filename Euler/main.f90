@@ -25,6 +25,7 @@ program ADERDG
 
         if(mod(timestep,WriteInterval) .eq. 0) then
             call write_data
+            call plot_troubled_cells
         end if
 
         ! Compute the time step size according to the CFL condition
@@ -52,7 +53,7 @@ program ADERDG
 
         do j = 1, JMAX
             do i = 1, IMAX
-                call  volume_integral(duh(:,:,:,i,j),qhi(:,:,:,i,j),Fhi(:,:,:,:,i,j))
+                call  volume_integral(duh(:,:,:,i,j),Fhi(:,:,:,:,i,j))
             end do
         end do
 
@@ -76,7 +77,7 @@ program ADERDG
                 call element_update(uh(:,:,:,i,j),duh(:,:,:,i,j))
 
                 if (N .gt. 0) then
-                    call DMP(dmpresult,uh(:,:,:,i, j), Limiter(i,j), 0.0d0)
+                    call DMP(dmpresult,uh(:,:,:,i, j), Limiter(i,j), 0.0)
                     if( .not. dmpresult) then
                         recompute(i,j) = 1
                         nRecompute = nRecompute + 1
@@ -100,6 +101,7 @@ program ADERDG
 
     print*, ' nRecomp = ', nRecompute, ' t = ', time, 'dt = ', dt
     call write_data
+    call plot_troubled_cells
 
     call CPU_TIME(tCPU2)
     print*, ' Total CPU time = ', tCPU2-tCPU1

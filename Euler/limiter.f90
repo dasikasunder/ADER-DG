@@ -13,14 +13,14 @@ subroutine get_subcell_data(lim,luh)
     use ader_dg
     implicit none
     ! Argument list
-    double precision :: lim(nVar,nSubLimV(1),nSubLimV(2)), luh(nVar,nDOF(1),nDOF(2))
+    real :: lim(nVar,nSubLimV(1),nSubLimV(2)), luh(nVar,nDOF(1),nDOF(2))
     ! Local variables
     integer :: iii, jjj
-    double precision :: limy(nVar,nDOF(1),nSubLimV(2))
+    real :: limy(nVar,nDOF(1),nSubLimV(2))
 
      ! mapping of uh to the sub-cell limiter along y direction
 
-     limy = 0.0d0
+     limy = 0.0
 
      do iii = 1, nDOF(1) ! x
          limy(:,iii,:) = matmul( luh(:,iii,:), TRANSPOSE(uh2lim) )
@@ -28,7 +28,7 @@ subroutine get_subcell_data(lim,luh)
 
      ! mapping of uh to the sub-cell limiter along x direction
 
-     lim = 0.0d0
+     lim = 0.0
 
      do jjj = 1, nSubLimV(2) ! y
          lim(:,:,jjj) = matmul( limy(:,:,jjj), TRANSPOSE(uh2lim) )
@@ -44,14 +44,14 @@ subroutine get_lobatto_data(lob,luh)
     use ader_dg
     implicit none
     ! Argument list
-    double precision :: lob(nVar,nDOF(1),nDOF(2)), luh(nVar,nDOF(1),nDOF(2))
+    real :: lob(nVar,nDOF(1),nDOF(2)), luh(nVar,nDOF(1),nDOF(2))
     ! Local variables
     integer :: iii, jjj
-    double precision :: loby(nVar,nDOF(1),nDOF(2))
+    real :: loby(nVar,nDOF(1),nDOF(2))
 
     ! mapping of uh to the Gauss-Lobatto points along y direction
 
-    loby = 0.0d0
+    loby = 0.0
 
     do iii = 1, nDOF(1) ! x
         loby(:,iii,:) = matmul( luh(:,iii,:), TRANSPOSE(uh2lob) )
@@ -59,7 +59,7 @@ subroutine get_lobatto_data(lob,luh)
 
     ! mapping of uh to the Gauss-Lobatto points along x direction
 
-    lob = 0.0d0
+    lob = 0.0
 
     do jjj = 1, nDOF(2) ! y
         lob(:,:,jjj) = matmul( loby(:,:,jjj), TRANSPOSE(uh2lob) )
@@ -75,13 +75,13 @@ subroutine put_subcell_data(luh,lim)
     use ader_dg
     implicit none
     ! Argument list
-    double precision :: lim(nVar,nSubLimV(1),nSubLimV(2)), luh(nVar,nDOF(1),nDOF(2))
+    real :: lim(nVar,nSubLimV(1),nSubLimV(2)), luh(nVar,nDOF(1),nDOF(2))
     ! Local variables
     integer :: iii, jjj
-    double precision :: luhy(nVar,nSubLimV(1),N+1)
+    real :: luhy(nVar,nSubLimV(1),N+1)
 
     ! Mapping of the sub-cell limiter to uh along y direction
-    luhy = 0.0d0
+    luhy = 0.0
 
     do iii = 1, nSubLimV(1) ! x
         luhy(:,iii,:) = matmul( lim(:,iii,:), TRANSPOSE(lim2uh) )
@@ -89,7 +89,7 @@ subroutine put_subcell_data(luh,lim)
 
     ! Mapping of the sub-cell limiter to uh along x direction
 
-   luh = 0.0d0
+   luh = 0.0
 
     do jjj = 1, nDOF(2)  ! y
         luh(:,:,jjj) = matmul( luhy(:,:,jjj), TRANSPOSE(lim2uh) )
@@ -106,9 +106,9 @@ subroutine get_min_max
     implicit none
     ! Local variables
     integer :: i, j, ii, jj, in, jn,  iVar
-    double precision :: lim(nVar,nSubLimV(1),nSubLimV(2))
-    double precision :: lob(nVar,nDOF(1),nDOF(2))
-    double precision :: Qmin(nVar), Qmax(nVar)
+    real :: lim(nVar,nSubLimV(1),nSubLimV(2))
+    real :: lob(nVar,nDOF(1),nDOF(2))
+    real :: Qmin(nVar), Qmax(nVar)
 
     ! Step 1) Loop over all elements and get the min/max for each variable
 
@@ -181,13 +181,13 @@ subroutine DMP(dmpresult,arguh,argLimiter,argmax)
     implicit none
     ! Argument list
     logical        :: dmpresult
-    double precision           :: arguh(nVar,nDOF(1),nDOF(2)),argmax
+    real           :: arguh(nVar,nDOF(1),nDOF(2)),argmax
     TYPE(tLimiter) :: argLimiter
     ! Local variables
     integer :: iii, jjj, iVar, iErr
-    double precision    :: lim(nVar,nSubLimV(1),nSubLimV(2))
-    double precision    :: lob(nVar,nDOF(1),nDOF(2))
-    double precision    :: lmin(nVar), lmax(nVar), ldiff, Qout(nVar)
+    real    :: lim(nVar,nSubLimV(1),nSubLimV(2))
+    real    :: lob(nVar,nDOF(1),nDOF(2))
+    real    :: lmin(nVar), lmax(nVar), ldiff, Qout(nVar)
 
 
     dmpresult = .true.
@@ -199,15 +199,15 @@ subroutine DMP(dmpresult,arguh,argLimiter,argmax)
 
         if (iVar .gt. 0) then
 
-            lmin(iVar) = MIN( MINVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
+            lmin(iVar) = min( MINVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
                             MINVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
                             MINVAL(lob(iVar,1:nDOF(1),1:nDOF(2))) )
 
-            lmax(iVar) = MAX( MAXVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
+            lmax(iVar) = max( MAXVAL(arguh(iVar,1:nDOF(1),1:nDOF(2))), &
                             MAXVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2))), &
                             MAXVAL(lob(iVar,1:nDOF(1),1:nDOF(2))) )
 
-            ldiff = MAX( 1.0d-4, 1.0d-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)), argmax )
+            ldiff = max( 1.0e-4, 1.0e-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)), argmax )
 
             if (lmin(iVar) .lt. argLimiter%lmin(iVar)-ldiff) then
                 dmpresult = .false.
@@ -362,18 +362,18 @@ end subroutine spread_recompute
     use ader_dg
     implicit none
     ! Argument list
-    double precision, INTENT(IN)  :: QL(nVar), QR(nVar), nv(nDim)
-    double precision, INTENT(OUT) :: flux(nVar)
+    real, intent(in)  :: QL(nVar), QR(nVar), nv(nDim)
+    real, intent(out) :: flux(nVar)
     ! Local variables
-    double precision :: smax, LL(nVar), LR(nVar)
-    double precision :: FL(nVar,nDim), FR(nVar,nDim)
+    real :: smax, LL(nVar), LR(nVar)
+    real :: FL(nVar,nDim), FR(nVar,nDim)
     
     call PDEEigenvalues(QL,nv,LL)
     call PDEEigenvalues(QR,nv,LR)
     smax = max( maxval(abs(LL)), maxval(abs(LR)) )
     call PDEFlux(QL,FL)
     call PDEFlux(QR,FR)
-    flux = 0.50d0*matmul(FL+FR,nv) - 0.50d0*smax*(QR-QL)
+    flux = 0.5*matmul(FL+FR,nv) - 0.5*smax*(QR-QL)
     
 end subroutine
 
@@ -384,15 +384,15 @@ end subroutine
 subroutine minmod(c,a,b,nnn)
     implicit none
     ! Argument list
-    integer, INTENT(IN)   :: nnn
-    double precision, INTENT(IN)      :: a(nnn), b(nnn)
-    double precision, INTENT(OUT)     :: c(nnn)
+    integer, intent(in)   :: nnn
+    real, intent(in)      :: a(nnn), b(nnn)
+    real, intent(out)     :: c(nnn)
     ! Local variables
     integer :: i
 
     do i = 1, nnn
-        if (a(i)*b(i) .le. 0.0d0) then
-            c(i) = 0.0d0
+        if (a(i)*b(i) .le. 0.0) then
+            c(i) = 0.0
         else
             if( abs(a(i)) .lt. abs(b(i)) ) then
                 c(i) = a(i)
@@ -409,57 +409,57 @@ end subroutine minmod
 !-----------------------------------------------------------------------
 
 subroutine subcell_recompute
-    use constants, only : m_pi
     use ader_dg
     implicit none
     ! Local variables
     integer :: i, j, in, jn, ii, jj
-    double precision    :: ldx(nDim), nv(nDim), nvi(nDim,nDim)
-    double precision    :: subuh0(nVar,(1-nSubLimV(1)):2*nSubLimV(1),(1-nSubLimV(2)):2*nSubLimV(2))
-    double precision    :: subuh1(nVar,nSubLimV(1),nSubLimV(2))
-    double precision    :: slopex(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: slopey(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: wLx(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: wLy(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: wRx(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: wRy(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
-    double precision    :: lim(nVar,nSubLimV(1),nSubLimV(2))
-    double precision    :: Qt(nVar)
-    double precision    :: FLx(nVar,nDim), FRx(nVar,nDim), FLy(nVar,nDim), FRy(nVar,nDim)
-    double precision    :: Fx(nVar,1:nSubLimV(1)+1,1:nSubLimV(2))
-    double precision    :: Fy(nVar,1:nSubLimV(1),1:nSubLimV(2)+1)
-    double precision    :: Va(nVar), Vb(nVar), Qbc(nVar), x_sw
+    real    :: ldx(nDim), nv(nDim), nvi(nDim,nDim)
+    real    :: subuh0(nVar,(1-nSubLimV(1)):2*nSubLimV(1),(1-nSubLimV(2)):2*nSubLimV(2))
+    real    :: subuh1(nVar,nSubLimV(1),nSubLimV(2))
+    real    :: slopex(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: slopey(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: wLx(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: wLy(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: wRx(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: wRy(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2))
+    real    :: lim(nVar,nSubLimV(1),nSubLimV(2))
+    real    :: Qt(nVar)
+    real    :: FLx(nVar,nDim), FRx(nVar,nDim), FLy(nVar,nDim), FRy(nVar,nDim)
+    real    :: Fx(nVar,1:nSubLimV(1)+1,1:nSubLimV(2))
+    real    :: Fy(nVar,1:nSubLimV(1),1:nSubLimV(2)+1)
+    real    :: Va(nVar), Vb(nVar), Qbc(nVar), x_sw
+    real, parameter :: m_pi = 4.0*atan(1.0)
     logical :: dmpresult
 
-    Va(1) = 8.0d0
-    Va(2) = 8.25d0*cos(m_pi/6.0d0)
-    Va(3) = -8.25d0*sin(m_pi/6.0d0)
-    Va(4) = 116.5d0
+    Va(1) = 8.0
+    Va(2) = 8.25*cos(m_pi/6.0)
+    Va(3) = -8.25*sin(m_pi/6.0)
+    Va(4) = 116.5
 
-    Vb(1) = 1.40d0;
-    Vb(2) = 0.0d0;
-    Vb(3) = 0.0d0;
-    Vb(4) = 1.0d0;
+    Vb(1) = 1.4;
+    Vb(2) = 0.0;
+    Vb(3) = 0.0;
+    Vb(4) = 1.0;
 
     call shock_position(time, x_sw)
 
-    nvi = 0.0d0
+    nvi = 0.0
 
     do ii = 1, nDim
-        nvi(ii,ii) = 1.0d0
+        nvi(ii,ii) = 1.0
     end do
 
-    ldx = dx/DBLE(nSubLim)
-    Fx = 0.0d0
-    Fy = 0.0d0
+    ldx = dx/real(nSubLim)
+    Fx = 0.0
+    Fy = 0.0
 
-    slopex = 0.0d0
-    slopey = 0.0d0
+    slopex = 0.0
+    slopey = 0.0
 
-    wLx = 0.0d0
-    wRx = 0.0d0
-    wLy = 0.0d0
-    wRy = 0.0d0
+    wLx = 0.0
+    wRx = 0.0
+    wLy = 0.0
+    wRy = 0.0
 
     do j = 1, JMAX
         do i = 1, IMAX
@@ -500,14 +500,14 @@ subroutine subcell_recompute
                 end if
 
                 if (j .eq. 1) then ! Bottom
-                    if (dble(i)*dx(1) .gt. 1.0d0/6.0d0) then ! Reflective boundary
+                    if (real(i)*dx(1) .gt. 1.0/6.0) then ! Reflective boundary
                         subuh0(3,:,1-nSubLimV(2):0) = -subuh0(3,:,1-nSubLimV(2):0)
                     end if
                 end if
 
                 if (j .eq. JMAX) then ! Top
 
-                    if (dble(i)*dx(1) .le. x_sw) then
+                    if (real(i)*dx(1) .le. x_sw) then
                         call PDEPrim2Cons(Va, Qbc)
                     else
                         call PDEPrim2Cons(Vb, Qbc)
@@ -616,7 +616,7 @@ subroutine subcell_recompute
                     call put_subcell_data(uh(:,:,:,i,j),subuh1)
 
                     ! If we recompute neighbors of troubled cells, and the resulting reconstructed DG polynomial is troubled, then activate the limiter also in this case
-                    call DMP(dmpresult,uh(:,:,:,i,j),Limiter(i,j),0.0d0)
+                    call DMP(dmpresult,uh(:,:,:,i,j),Limiter(i,j),0.0)
 
                     if (dmpresult) then
                         Limiter(i,j)%status = 0

@@ -11,16 +11,16 @@ subroutine analyze_soln
     use ader_dg
     implicit none
 
-    double precision, pointer :: uh_exact(:,:,:,:,:), error_density(:, :)
+    real, pointer :: uh_exact(:,:,:,:,:), error_density(:, :)
     integer :: i, j, k, l
-    double precision :: u0(nVar), xGP(nDim), corner(nDim), rho_ave, rho_ave_exact
+    real :: u0(nVar), xGP(nDim), corner(nDim), rho_ave, rho_ave_exact
 
     allocate(  uh_exact(nVar, nDOF(1), nDOF(2), IMAX, JMAX) )
     allocate(  error_density(IMAX, JMAX) )
 
     do j = 1, JMAX
         do i = 1, IMAX
-            corner(:) = x(:,i,j) - 0.5d0*dx(:) ! coordinate of the lower left corner of the cell
+            corner(:) = x(:,i,j) - 0.5*dx(:) ! coordinate of the lower left corner of the cell
             do l = 1, nDOF(2)
                 do k = 1, nDOF(1)
                     xGP = corner + (/ xiGPN(k), xiGPN(l) /)*dx(:)
@@ -34,8 +34,8 @@ subroutine analyze_soln
     do j = 1, JMAX
         do i = 1, IMAX
 
-            rho_ave= 0.0d0
-            rho_ave_exact = 0.0d0
+            rho_ave= 0.0
+            rho_ave_exact = 0.0
 
             do l = 1, nDOF(2)
                 do k = 1, nDOF(1)
@@ -44,7 +44,7 @@ subroutine analyze_soln
                 end do
             end do
 
-            error_density(i,j) = ABS(rho_ave_exact - rho_ave)
+            error_density(i,j) = abs(rho_ave_exact - rho_ave)
 
         end do
     end do

@@ -9,8 +9,8 @@ subroutine element_update(luh, lduh)
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(inout) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
-    double precision, intent(out)   :: luh(nVar,nDOF(1),nDOF(2))       ! nonlinear flux tensor in each space-time DOF
+    real, intent(inout) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
+    real, intent(out)   :: luh(nVar,nDOF(1),nDOF(2))       ! nonlinear flux tensor in each space-time DOF
 
     ! Local variables
     integer             :: i,j

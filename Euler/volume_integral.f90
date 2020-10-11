@@ -5,13 +5,12 @@
 ! Find the element volume integral
 !-----------------------------------------------------------------------
 
-subroutine volume_integral(lduh, lqhi, lFhi)
+subroutine volume_integral(lduh, lFhi)
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(in)  :: lqhi(nVar,nDOF(1),nDOF(2))      ! space-time degrees of freedom
-    double precision, intent(in)  :: lFhi(nVar,nDim,nDOF(1),nDOF(2)) ! nonlinear flux tensor in each space-time DOF
-    double precision, intent(out) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
+    real, intent(in)  :: lFhi(nVar,nDim,nDOF(1),nDOF(2)) ! nonlinear flux tensor in each space-time DOF
+    real, intent(out) :: lduh(nVar,nDOF(1),nDOF(2))      ! spatial degrees of freedom
 
     ! Local variables
     integer           :: i,j

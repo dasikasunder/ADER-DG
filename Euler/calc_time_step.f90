@@ -13,30 +13,30 @@ subroutine calc_time_step
     ! Local variables
 
     integer  :: iDim, i, j, k, l
-    double precision :: Lambda(nVar)
-    double precision :: nv(nDim,nDim), denom
+    real :: Lambda(nVar)
+    real :: nv(nDim,nDim), denom
 
     ! Normal vectors pointing into the two space dimensions
 
-    nv = 0.0d0
+    nv = 0.0
 
     do i = 1, nDim
-        nv(i,i) = 1.0d0
+        nv(i,i) = 1.0
     end do
 
     ! First calculate the minimum time step on the current processor
 
-    dt = 1.0d20
+    dt = 1.0e20
 
     do j = 1, JMAX
         do i = 1, IMAX
 
             do k = 1, nDOF(1)
                 do l = 1, nDOF(2)
-                    denom = 0.0d0
+                    denom = 0.0
                     do iDim = 1, nDim
                         call PDEEigenvalues(uh(:,k,l,i,j),nv(:,iDim),Lambda)
-                        denom = denom + MAXVAL(ABS(Lambda))/dx(iDim)
+                        denom = denom + maxval(abs(Lambda))/dx(iDim)
                     end do
                     dt = min(dt, CFL*PNPMTable(N)/denom )
                 end do

@@ -1,37 +1,37 @@
 subroutine shock_position(t, x_sw)
-    use constants, only : m_pi
-    double precision, intent(in)  :: t
-    double precision, intent(out) :: x_sw
+    real, intent(in)  :: t
+    real, intent(out) :: x_sw
+    real, parameter :: m_pi = 4.0*atan(1.0)
 
-    x_sw = 1.d0/6.d0 + 1.d0/tan(m_pi/3.0d0) + (10.0d0/sin(m_pi/3.0d0))*t
+    x_sw = 1.0/6.0 + 1.0/tan(m_pi/3.0) + (10.0/sin(m_pi/3.0))*t
 
 end subroutine
 
 subroutine solve_riemann_problem
-    use constants, only : m_pi
     use ader_dg
     implicit none
 
     ! Local variables
-    double precision :: QL(nVar), QR(nVar), FL(nVar), FR(nVar), nv(nDim)
-    double precision :: Va(nVar), Vb(nVar), Qbc(nVar), Fbc(nVar, nDim), x_sw
+    real :: QL(nVar), QR(nVar), FL(nVar), FR(nVar), nv(nDim)
+    real :: Va(nVar), Vb(nVar), Qbc(nVar), Fbc(nVar, nDim), x_sw
+    real, parameter :: m_pi = 4.0*atan(1.0)
     integer  :: i, j, k, l
 
-    Va(1) = 8.0d0
-    Va(2) = 8.25d0*cos(m_pi/6.0d0)
-    Va(3) = -8.25d0*sin(m_pi/6.0d0)
-    Va(4) = 116.5d0
+    Va(1) = 8.0
+    Va(2) = 8.25*cos(m_pi/6.0)
+    Va(3) = -8.25*sin(m_pi/6.0)
+    Va(4) = 116.5
 
-    Vb(1) = 1.40d0;
-    Vb(2) = 0.0d0;
-    Vb(3) = 0.0d0;
-    Vb(4) = 1.0d0;
+    Vb(1) = 1.4;
+    Vb(2) = 0.0;
+    Vb(3) = 0.0;
+    Vb(4) = 1.0;
 
     call shock_position(time, x_sw)
 
     ! Find upwind flux in x-direction
 
-    nv(1) = 1.0d0; nv(2) = 0.0d0
+    nv(1) = 1.0; nv(2) = 0.0
 
     do j = 1, JMAX
         do i = 1, IMAX+1
@@ -66,7 +66,7 @@ subroutine solve_riemann_problem
 
     ! Find upwind flux in y-direction
 
-    nv(1) = 0.0d0; nv(2) = 1.0d0
+    nv(1) = 0.0; nv(2) = 1.0
 
     do j = 1, JMAX+1
         do i = 1, IMAX
@@ -75,7 +75,7 @@ subroutine solve_riemann_problem
 
                 if (j .eq. 1) then ! Bottom boundary
 
-                    if (dble(i)*dx(1) .le. 1.0d0/6.0d0) then ! Transmissive
+                    if (real(i)*dx(1) .le. 1.0/6.0) then ! Transmissive
                         QL = qBnd(:,3,k,i,j);   FL = FBnd(:,3,k,i,j)
                     else ! Reflective
                         QL = qBnd(:,3,k,i,j);   FL = FBnd(:,3,k,i,j)
@@ -89,7 +89,7 @@ subroutine solve_riemann_problem
 
                     QL = qBnd(:,4,k,i,j-1); FL = FBnd(:,4,k,i,j-1)
 
-                    if (dble(i)*dx(1) .le. x_sw) then
+                    if (real(i)*dx(1) .le. x_sw) then
                         call PDEPrim2Cons(Va, Qbc)
                     else
                         call PDEPrim2Cons(Vb, Qbc)

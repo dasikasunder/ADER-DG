@@ -10,8 +10,8 @@ subroutine surface_integral(lduh, lFl, lFr, lGb, lGt)
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(in)    :: lFl(nVar,nDOF(2)), lFr(nVar,nDOF(2)), lGb(nVar,nDOF(1)), lGt(nVar,nDOF(1))
-    double precision, intent(inout) :: lduh(nVar, nDOF(1), nDOF(2))       ! Spatial degrees of freedom
+    real, intent(in)    :: lFl(nVar,nDOF(2)), lFr(nVar,nDOF(2)), lGb(nVar,nDOF(1)), lGt(nVar,nDOF(1))
+    real, intent(inout) :: lduh(nVar, nDOF(1), nDOF(2))       ! Spatial degrees of freedom
 
     ! Local variables
     integer           :: i,j,iVar

@@ -9,19 +9,19 @@ subroutine MatrixInverse(N, A, iA)
         implicit none
         ! Argument list
         integer, intent(in)   :: N
-        double precision, intent(in)  :: A(N,N)
-        double precision, intent(out) :: iA(N,N)
+        real, intent(in)  :: A(N,N)
+        real, intent(out) :: iA(N,N)
         ! Local Variables
         integer  :: i,j,ml(1)
-        double precision :: piv
-        double precision :: temp(2*N)
-        double precision :: C(2*N,N)
+        real :: piv
+        real :: temp(2*N)
+        real :: C(2*N,N)
 
         C(1:N,:)     = transpose(A)
-        C(N+1:2*N,:) = 0.0d0
+        C(N+1:2*N,:) = 0.0
 
         do i = 1, N
-            C(N+i,i) = 1.0d0
+            C(N+i,i) = 1.0
         end do
 
         ! Forward elimination and row swapping (if necessary)
@@ -36,7 +36,7 @@ subroutine MatrixInverse(N, A, iA)
             C(:,j) = C(:,i)
             C(:,i) = temp
 
-            if (C(i,i) .eq. 0.0d0) then
+            if (abs(C(i,i)) .le. 1.0e-15) then
                 print *, 'ERROR. Matrix is singular!'
                 do j = 1, N
                     print *, A(j,:)
@@ -44,7 +44,7 @@ subroutine MatrixInverse(N, A, iA)
                 stop
             end if
 
-            piv    = 1.0d0/C(i,i)
+            piv    = 1.0/C(i,i)
             C(:,i) = C(:,i)*piv
 
             do j = i+1, N

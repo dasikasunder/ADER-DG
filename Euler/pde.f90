@@ -6,16 +6,16 @@
 !-----------------------------------------------------------------------
 
 subroutine PDECons2Prim(Q, V)
-    use ader_dg, only : nVar, nDim, EQN
+    use ader_dg, only : nVar, EQN
     implicit none
     ! Argument list
-    double precision, intent(IN)     :: Q(nVar)     ! vector of conserved quantities
-    double precision, intent(OUT)    :: V(nVar)     ! primitive variables
+    real, intent(in)     :: Q(nVar)     ! vector of conserved quantities
+    real, intent(out)    :: V(nVar)     ! primitive variables
 
     ! Local variables
-    double precision                 :: p
+    real                 :: p
 
-    p = (EQN%gamma-1.0d0)*( Q(4) - 0.5d0*SUM(Q(2:3)**2)/Q(1) )    ! fluid pressure
+    p = (EQN%gamma-1.0)*( Q(4) - 0.5*SUM(Q(2:3)**2)/Q(1) )    ! fluid pressure
     V(1) = Q(1)             ! fluid density
     V(2:3) = Q(2:3)/Q(1)    ! fluid velocity
     V(4)   = p              ! fluid pressure
@@ -27,15 +27,15 @@ end subroutine PDECons2Prim
 !-----------------------------------------------------------------------
 
 subroutine PDEPrim2Cons(V, Q)
-    use ader_dg, ONLY : nVar, nDim, EQN
+    use ader_dg, ONLY : nVar, EQN
     implicit none
     ! Argument list
-    double precision, intent(in)      :: V(nVar)     ! primitive variables
-    double precision, intent(out)     :: Q(nVar)     ! vector of conserved quantities
+    real, intent(in)      :: V(nVar)     ! primitive variables
+    real, intent(out)     :: Q(nVar)     ! vector of conserved quantities
 
     Q(1)   = V(1)           ! fluid density
     Q(2:3) = V(1)*V(2:3)    ! momentum
-    Q(4)   = V(4)/(EQN%GAMMA-1) + 0.5d0*V(1)*SUM(V(2:3)**2)   ! total energy = internal energy + kinetic energy
+    Q(4)   = V(4)/(EQN%GAMMA-1) + 0.5*V(1)*SUM(V(2:3)**2)   ! total energy = internal energy + kinetic energy
 
 END subroutine PDEPrim2Cons
 
@@ -47,24 +47,14 @@ subroutine PDEFlux(Q, F)
     use ader_dg, ONLY : nVar, nDim, EQN
     implicit none
     ! Argument list
-    double precision, intent(in)  :: Q(nVar)
-    double precision, intent(out) :: F(nVar,nDim)
+    real, intent(in)  :: Q(nVar)
+    real, intent(out) :: F(nVar,nDim)
 
     ! Local variables
-    double precision :: p, irho
+    real :: p, irho
 
-    irho = 1.0d0/Q(1)
-    p = (EQN%GAMMA-1.0d0)*( Q(4) - 0.5d0*SUM(Q(2:3)**2)*irho )
-
-    !IF(Q(1) .LT. 1.0d0-14) THEN
-        !PRINT *, 'Negative Density', Q(1)
-        !STOP 1
-    !ENDIF
-
-    !IF(p .LT. 1.0d0-12) THEN
-        !PRINT *, 'Negative Pressure', p
-        !STOP 1
-    !ENDIF
+    irho = 1.0/Q(1)
+    p = (EQN%GAMMA-1.0)*( Q(4) - 0.5*SUM(Q(2:3)**2)*irho )
 
     F(1,1) = Q(2)
     F(2,1) = irho*Q(2)*Q(2) + p
@@ -86,14 +76,14 @@ subroutine PDEEigenvalues(Q, nv, Lambda)
     use ader_dg, ONLY : nVar, nDim, EQN
     implicit none
     ! Argument list
-    double precision, intent(in)  :: Q(nVar), nv(nDim)
-    double precision, intent(out) :: Lambda(nVar)
+    real, intent(in)  :: Q(nVar), nv(nDim)
+    real, intent(out) :: Lambda(nVar)
 
     ! Local variables
-    double precision :: p, u, c
+    real :: p, u, c
 
     u = ( Q(2)*nv(1) + Q(3)*nv(2) )/Q(1)                      ! normal velocity
-    p = (EQN%gamma-1.0d0)*( Q(4) - 0.5d0*SUM(Q(2:3)**2)/Q(1) )    ! fluid pressure
+    p = (EQN%gamma-1.0)*( Q(4) - 0.5*SUM(Q(2:3)**2)/Q(1) )    ! fluid pressure
     c = SQRT(EQN%gamma*p/Q(1))                                ! sound speed
 
     Lambda = (/ u-c, u, u, u+c /)                          ! The eigenvalues of the Euler equations
@@ -108,18 +98,18 @@ subroutine RusanovFlux(QL, FL, QR, FR, nv, Flux)
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(in)  :: QL(nVar), FL(nVar), QR(nVar), FR(nVar), nv(nDim)
-    double precision, intent(out) :: Flux(nVar)
+    real, intent(in)  :: QL(nVar), FL(nVar), QR(nVar), FR(nVar), nv(nDim)
+    real, intent(out) :: Flux(nVar)
 
     ! Local variables
-    double precision :: smax, LL(nVar), LR(nVar)
+    real :: smax, LL(nVar), LR(nVar)
 
     call PDEEigenvalues(QL,nv,LL)
     call PDEEigenvalues(QR,nv,LR)
 
     smax = max( maxval(abs(LL)), maxval(abs(LR)) )
 
-    Flux = 0.5d0*(FL + FR) - 0.5d0*smax*(QR - QL)
+    Flux = 0.5*(FL + FR) - 0.5*smax*(QR - QL)
 
 end subroutine
 
@@ -128,28 +118,28 @@ end subroutine
 !-----------------------------------------------------------------------
 
 subroutine PDEAssurePositivity(iErr,Q, Qout)
-    use ader_dg, only : nVar, nDim, EQN
+    use ader_dg, only : nVar, EQN
     implicit none
     ! Argument list
-    double precision, intent(IN)     :: Q(nVar)
-    double precision, intent(OUT)    :: Qout(nVar)
+    real, intent(IN)     :: Q(nVar)
+    real, intent(OUT)    :: Qout(nVar)
     integer, intent(OUT) :: iErr
     ! Local variables
-    double precision :: p, irho
+    real :: p, irho
 
     iErr = 0
     Qout = Q ! we do not apply dirty tricks here at this point
-    irho = 1.0d0/Q(1)
+    irho = 1.0/Q(1)
 
     ! 2D compressible Euler equations
 
-    p = (EQN%GAMMA-1)*( Q(4) - 0.50d0*SUM(Q(2:3)**2)*irho )
+    p = (EQN%GAMMA-1)*( Q(4) - 0.5*SUM(Q(2:3)**2)*irho )
 
-    if ( Q(1) .le. 1.0d0-12) then
+    if ( Q(1) .le. 1.0e-12) then
         iErr = -1
     end if
 
-    if (p .le. 1.0d0-12) then
+    if (p .le. 1.0e-12) then
         iErr = -2
     end if
 end subroutine PDEAssurePositivity

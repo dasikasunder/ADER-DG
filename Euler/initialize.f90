@@ -11,39 +11,39 @@ subroutine initialize
 
     ! Local variables
     integer :: ii, jj, i, j, k, l, iGP, iVar, VMAX(nDim)
-    double precision :: phi(N+1), phi0(N+1), phi1(N+1), phi_xi(N+1), corner(nDim), u0(nVar), xGP(nDim), x0(nDim)
-    double precision :: dxi, xi, xi1, xi2
-    double precision, pointer  :: LSQM(:,:), iLSQM(:,:), LSQrhs(:,:)
+    real :: phi(N+1), phi0(N+1), phi1(N+1), phi_xi(N+1), corner(nDim), u0(nVar), xGP(nDim), x0(nDim)
+    real :: dxi, xi, xi1, xi2
+    real, pointer  :: LSQM(:,:), iLSQM(:,:), LSQrhs(:,:)
     logical  :: dmpresult
 
     ! -> Setup important parameters controlling the simulation (to be read by input file)
 
-    OPEN(UNIT = 1, FILE = 'euler_params.ini', STATUS = 'UNKNOWN')
+    open(unit = 1, file = 'params.ini', status = 'UNKNOWN')
 
-    READ(1,*)EQN%GAMMA
-    READ(1,*)IMAX
-    READ(1,*)JMAX
-    READ(1,*)xL(1)
-    READ(1,*)xL(2)
-    READ(1,*)xR(1)
-    READ(1,*)xR(2)
-    READ(1,*)bL
-    READ(1,*)bR
-    READ(1,*)bB
-    READ(1,*)bT
-    READ(1,*)ICType
-    READ(1,*)tend
-    READ(1,*)WriteInterval
+    read(1,*)EQN%GAMMA
+    read(1,*)IMAX
+    read(1,*)JMAX
+    read(1,*)xL(1)
+    read(1,*)xL(2)
+    read(1,*)xR(1)
+    read(1,*)xR(2)
+    read(1,*)bL
+    read(1,*)bR
+    read(1,*)bB
+    read(1,*)bT
+    read(1,*)ICType
+    read(1,*)tend
+    read(1,*)WriteInterval
 
-    CLOSE(1)
+    close(1)
 
     ! -> Setup mesh and time related data
 
     VMAX = (/ IMAX, JMAX /)
     dx = (xR-xL)/VMAX
     timestep = 0
-    dt = 0.0d0
-    time = 0.0d0
+    dt = 0.0
+    time = 0.0
     nElem = IMAX*JMAX
     nFace = JMAX*IMAX + JMAX*IMAX
     nNode = (IMAX+1)*(JMAX+1)
@@ -69,6 +69,8 @@ subroutine initialize
         BaseFile = 'RP2D5'
     else if (ICType .eq. 10) then
         BaseFile = 'ShockVortex'
+    else if (ICType .eq. 11) then
+        BaseFile = 'DMR'
     else
         BaseFile = 'Sol-'
     end if
@@ -83,11 +85,11 @@ subroutine initialize
         dn(i) = 1
     end do
 
-    call gauleg(0.0d0, 1.0d0, xiGPN, wGPN, N+1) ! Gauss legendre points and weights
+    call gauleg(0.0, 1.0, xiGPN, wGPN, N+1) ! Gauss legendre points and weights
     xin = xiGPN                                 ! Basis functions run through Gauss-Legendre points
-    MM   = 0.0d0                                ! Element mass matrix
-    Kxi  = 0.0d0                                ! Element stiffness matrix
-    dudx = 0.0d0                                ! discrete derivative operator, which projects the derivatives onto the basis
+    MM   = 0.0                                ! Element mass matrix
+    Kxi  = 0.0                                ! Element stiffness matrix
+    dudx = 0.0                                ! discrete derivative operator, which projects the derivatives onto the basis
 
     do iGP = 1, N+1
         call basis_func_1d(phi,phi_xi,xiGPN(iGP))
@@ -103,8 +105,8 @@ subroutine initialize
 
     dudx = matmul( iMM, transpose(Kxi) )
 
-    call basis_func_1d(phi0, phi_xi, 0.0d0)   ! Compute the basis functions on the left
-    call basis_func_1d(phi1, phi_xi, 1.0d0)   ! Compute the basis function on the right
+    call basis_func_1d(phi0, phi_xi, 0.0)   ! Compute the basis functions on the left
+    call basis_func_1d(phi1, phi_xi, 1.0)   ! Compute the basis function on the right
 
     ! The flux matrices are all possible combinations of left and right
 
@@ -146,8 +148,8 @@ subroutine initialize
 
     do j = 1, JMAX
         do i = 1, IMAX
-            x(1,i,j) = xL(1) + (DBLE(i-1) + 0.5d0)*dx(1)
-            x(2,i,j) = xL(2) + (DBLE(j-1) + 0.5d0)*dx(2)
+            x(1,i,j) = xL(1) + (real(i-1) + 0.5)*dx(1)
+            x(2,i,j) = xL(2) + (real(j-1) + 0.5)*dx(2)
         end do
     end do
 
@@ -170,12 +172,12 @@ subroutine initialize
     allocate( uh2lim(nSubLim,N+1), lim2uh(N+1,nSubLim)           )
     allocate( uh2lob(N+1,N+1)                                    )
 
-    uh2lim = 0.0d0
-    dxi = 1.0d0/dble(nSubLim)    ! the limiter uses nSubLim subintervals in each cell
+    uh2lim = 0.0
+    dxi = 1.0/real(nSubLim)    ! the limiter uses nSubLim subintervals in each cell
 
     do i = 1, nSubLim
-        xi1 = dble(i-1)*dxi     ! left sub-interval boundary
-        xi2 = dble(i  )*dxi     ! right sub-interval boundary
+        xi1 = real(i-1)*dxi     ! left sub-interval boundary
+        xi2 = real(i  )*dxi     ! right sub-interval boundary
         do ii = 1, N+1
             xi = xi1 + dxi*xiGPN(ii)
             call basis_func_1d(phi,phi_xi,xi)
@@ -191,15 +193,15 @@ subroutine initialize
     LSQM(N+2,1:N+1)   =  wGPN(:)
     LSQM(1:N+1,N+2)   = -wGPN(:)
 
-    LSQM(N+2,N+2) = 0.0d0
+    LSQM(N+2,N+2) = 0.0
     call MatrixInverse(N+2,LSQM,iLSQM)
 
-    LSQrhs(1:N+1,:)   = 2.0d0*transpose(uh2lim)
+    LSQrhs(1:N+1,:)   = 2.0*transpose(uh2lim)
     LSQrhs(N+2,:)     = dxi
     lim2uh = matmul( iLSQM(1:N+1,:), LSQrhs )
 
     ! Compute the Gauss-Lobatto quadrature nodes
-    call gaulob(0.0d0, 1.0d0, xiLob, wLob, N+1)
+    call gaulob(0.0, 1.0, xiLob, wLob, N+1)
 
     do ii = 1, N+1
         call basis_func_1d(phi,phi_xi,xiLob(ii))
@@ -207,7 +209,7 @@ subroutine initialize
     end do
 
     do i = 1, nSubLim
-         xilimbary(i) = 0.0d0 + 0.5d0/dble(nSubLim) + dble(i-1)*1.0d0/dble(nSubLim)
+         xilimbary(i) = 0.0 + 0.5/real(nSubLim) + real(i-1)*1.0/real(nSubLim)
     end do
 
     deallocate( LSQM, iLSQM, LSQrhs )
@@ -260,7 +262,7 @@ subroutine initialize
     do j = 1, JMAX
         do i = 1, IMAX
 
-            corner(:) = x(:,i,j) - 0.5d0*dx(:) ! coordinate of the lower left corner of the cell
+            corner(:) = x(:,i,j) - 0.5*dx(:) ! coordinate of the lower left corner of the cell
             do l = 1, nDOF(2)
                 do k = 1, nDOF(1)
                     xGP = corner + (/ xiGPN(k), xiGPN(l) /)*dx(:)
@@ -276,7 +278,7 @@ subroutine initialize
                     Limiter(i,j)%lmax(iVar) = maxval(uh(iVar,:,:,i,j))
                 end do
 
-                call DMP(dmpresult,uh(:,:,:,i,j),Limiter(i,j),1.0d-1)
+                call DMP(dmpresult,uh(:,:,:,i,j),Limiter(i,j),1.0e-1)
 
                 if( .not. dmpresult) then
 
@@ -307,30 +309,30 @@ subroutine initialize
 end subroutine initialize
 
 subroutine InitialField(xGP, u0)
-    use constants, only : m_pi
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(in ) :: xGP(nDim)          ! spatial position vector
-    double precision, intent(out) :: u0(nVar)           ! initial data vector in terms of conserved variables
+    real, intent(in ) :: xGP(nDim)          ! spatial position vector
+    real, intent(out) :: u0(nVar)           ! initial data vector in terms of conserved variables
     ! Local variables
-    double precision :: v0(nVar), xx, yy
-
+    real :: v0(nVar), xx, yy
+    real, parameter :: m_pi = 4.0*atan(1.0)
+    
     xx = xGP(1)
     yy = xGP(2)
 
-    if (xx .le. 1.0d0/6.0d0 + yy/tan(m_pi/3.0d0)) then
+    if (xx .le. 1.0/6.0 + yy/tan(m_pi/3.0)) then
 
-        v0(1) = 8.0d0
-        v0(2) = 8.25d0*cos(m_pi/6.0d0)
-        v0(3) = -8.25d0*sin(m_pi/6.0d0)
-        v0(4) = 116.5d0
+        v0(1) = 8.0
+        v0(2) = 8.25*cos(m_pi/6.0)
+        v0(3) = -8.25*sin(m_pi/6.0)
+        v0(4) = 116.5
     else
 
-        v0(1) = 1.40d0;
-        v0(2) = 0.0d0;
-        v0(3) = 0.0d0;
-        v0(4) = 1.0d0;
+        v0(1) = 1.4;
+        v0(2) = 0.0;
+        v0(3) = 0.0;
+        v0(4) = 1.0;
 
     end if
 

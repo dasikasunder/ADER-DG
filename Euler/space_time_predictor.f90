@@ -10,19 +10,19 @@ subroutine ader_space_time_predictor(lqhi, lFhi, lQbnd, lFbnd, luh)
     use ader_dg
     implicit none
     ! Argument list
-    double precision, intent(in)  :: luh(nVar,nDOF(1),nDOF(2))              ! spatial degrees of freedom
-    double precision, intent(out) :: lqhi(nVar,nDOF(1),nDOF(2))             ! time-averaged space-time degrees of freedom
-    double precision, intent(out) :: lFhi(nVar,nDim,nDOF(1),nDOF(2))        ! time-averaged nonlinear flux tensor in each space-time DOF
-    double precision, intent(out) :: lqbnd(nVar,4,nDOF(2))                  ! time-averaged space-time degrees of freedom
-    double precision, intent(out) :: lFbnd(nVar,4,nDOF(2))                  ! time-averaged nonlinear flux tensor in each space-time DOF
+    real, intent(in)  :: luh(nVar,nDOF(1),nDOF(2))              ! spatial degrees of freedom
+    real, intent(out) :: lqhi(nVar,nDOF(1),nDOF(2))             ! time-averaged space-time degrees of freedom
+    real, intent(out) :: lFhi(nVar,nDim,nDOF(1),nDOF(2))        ! time-averaged nonlinear flux tensor in each space-time DOF
+    real, intent(out) :: lqbnd(nVar,4,nDOF(2))                  ! time-averaged space-time degrees of freedom
+    real, intent(out) :: lFbnd(nVar,4,nDOF(2))                  ! time-averaged nonlinear flux tensor in each space-time DOF
 
     ! Local variables
     integer  :: i,j,l,iVar,iDim, iter
-    double precision :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(0))      ! contribution of the initial condition to the known right hand side
-    double precision :: rhs(nVar,nDOF(1),nDOF(2),nDOF(0))       ! known right hand side
-    double precision :: lqh(nVar,nDOF(1),nDOF(2),nDOF(0))       ! space-time degrees of freedom
-    double precision :: lFh(nVar,nDim,nDOF(1),nDOF(2),nDOF(0))  ! nonlinear flux tensor in each space-time DOF
-    double precision :: lqhold(nVar,nDOF(1),nDOF(2),nDOF(0))    ! old space-time degrees of freedom
+    real :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(0))      ! contribution of the initial condition to the known right hand side
+    real :: rhs(nVar,nDOF(1),nDOF(2),nDOF(0))       ! known right hand side
+    real :: lqh(nVar,nDOF(1),nDOF(2),nDOF(0))       ! space-time degrees of freedom
+    real :: lFh(nVar,nDim,nDOF(1),nDOF(2),nDOF(0))  ! nonlinear flux tensor in each space-time DOF
+    real :: lqhold(nVar,nDOF(1),nDOF(2),nDOF(0))    ! old space-time degrees of freedom
 
     ! Form an initial guess
 
@@ -54,7 +54,7 @@ subroutine ader_space_time_predictor(lqhi, lFhi, lQbnd, lFbnd, luh)
             ! Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other)
             do j = 1, nDOF(2)
                 do i = 1, nDOF(1)
-                    CALL PDEFlux(lqh(:,i,j,l), lFh(:,:,i,j,l))
+                    call PDEFlux(lqh(:,i,j,l), lFh(:,:,i,j,l))
                 end do
             end do
 
@@ -78,7 +78,7 @@ subroutine ader_space_time_predictor(lqhi, lFhi, lQbnd, lFbnd, luh)
 
         do j = 1, nDOF(2)
             do i = 1, nDOF(1)
-                lqh(:,i,j,:) = 1.0d0/(wGPN(i)*wGPN(j))*matmul( rhs(:,i,j,:), transpose(iK1) )
+                lqh(:,i,j,:) = 1.0/(wGPN(i)*wGPN(j))*matmul( rhs(:,i,j,:), transpose(iK1) )
             end do
         end do
     end do
@@ -97,8 +97,8 @@ subroutine ader_space_time_predictor(lqhi, lFhi, lQbnd, lFbnd, luh)
 
     ! Compute the bounday-extrapolated values for Q and F*n
 
-    lQbnd = 0.0d0
-    lFbnd = 0.0d0
+    lQbnd = 0.0
+    lFbnd = 0.0
 
     ! x-direction: face 1 (left) and face 2 (right)
 

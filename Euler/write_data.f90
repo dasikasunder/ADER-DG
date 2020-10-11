@@ -10,7 +10,7 @@ subroutine write_data
     implicit none
 
     integer            :: i, j, ii, jj, iVar
-    double precision   :: x_c, y_c, Q(nVar), Vav(nVar)
+    real   :: x_c, y_c, Q(nVar), Vav(nVar)
     character(len=200) :: Filename
     integer, parameter :: out_unit = 20
 
@@ -18,7 +18,7 @@ subroutine write_data
 
     do j = 1, JMAX
         do i = 1, IMAX
-            Q = 0.0d0
+            Q = 0.0
 
             do iVar = 1, nVar
                 do jj = 1, nDOF(2)
@@ -51,8 +51,8 @@ subroutine write_data
 
     do j = 1, JMAX
         do i = 1, IMAX
-            x_c = xL(1) + (DBLE(i)-0.5)*dx(1)
-            y_c = xL(2) + (DBLE(j)-0.5)*dx(2)
+            x_c = xL(1) + (real(i)-0.5)*dx(1)
+            y_c = xL(2) + (real(j)-0.5)*dx(2)
             write(out_unit, '(E15.7, E15.7, E15.7)')  x_c, y_c, 0.0
         end do
     end do
@@ -102,7 +102,7 @@ subroutine plot_troubled_cells
     use ader_dg
     implicit none
     ! Local variables
-    double precision, pointer :: xnode(:,:)
+    real, pointer :: xnode(:,:)
     integer, pointer :: tri(:,:), idxn(:,:), idxe(:,:)
     integer :: i, j, counter
     character(len=200) :: Filename
@@ -173,11 +173,11 @@ subroutine plot_troubled_cells
     do j = 1, JMAX
         do i = 1, IMAX
             if (recompute(i,j) .eq. 1) then
-                write(out_unit, '(e15.7)')  2.0d0
+                write(out_unit, '(e15.7)')  2.0
             else if (recompute(i,j) .eq. 2) then
-                write(out_unit, '(e15.7)')  1.0d0
+                write(out_unit, '(e15.7)')  1.0
             else
-                write(out_unit, '(e15.7)')  0.0d0
+                write(out_unit, '(e15.7)')  0.0
             end if
        end do
     end do
