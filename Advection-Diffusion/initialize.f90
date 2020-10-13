@@ -28,13 +28,11 @@ subroutine initialize
     read(1,*)xR(1)
     read(1,*)xR(2)
     read(1,*)tend
+    read(1,*)bC(1)
+    read(1,*)bC(2)
+    read(1,*)bC(3)
+    read(1,*)bC(4)
     read(1,*)WriteInterval
-
-    xL(1) = 0.0
-    xL(2) = 0.0
-
-    xR(1) = 0.25*m_pi
-    xR(2) = 2.0*m_pi
 
     close(1)
 
@@ -159,7 +157,7 @@ subroutine initial_field(xGP, u0)
     xx = xGP(1)
     yy = xGP(2)
 
-    v0(1) = sin((yy))
+    v0(1) = 0.0
 
     call PDEPrim2Cons(V0, u0)
 

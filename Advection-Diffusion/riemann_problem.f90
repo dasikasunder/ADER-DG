@@ -10,7 +10,7 @@ subroutine solve_riemann_problem
     implicit none
 
     ! Local variables
-    real    :: QL(nVar), gradQL(nVar,nDim), QR(nVar), gradQR(nVar,nDim), nv(nDim)
+    real    :: QL(nVar), gradQL(nVar,nDim), QR(nVar), gradQR(nVar,nDim), nv(nDim), y
     integer :: i, j, k, l
 
     ! Find upwind flux in x-direction
@@ -22,16 +22,33 @@ subroutine solve_riemann_problem
 
             do l = 1, nDOF(2)
 
-                if (i .eq. 1) then ! Left boundary (Periodic)
-
-                    QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
-                    QR = qBnd(:,1,l,1,j);    gradQR = gradqBnd(:,:,1,l,1,j)
-
+                if (i .eq. 1) then ! Left boundary 
+    
+                    if (bC(1) .eq. 1) then ! Neumann 
+                        QL = qBnd(:,1,l,1,j); gradQL = gradqBnd(:,:,1,l,1,j)
+                        QR = qBnd(:,1,l,1,j); gradQR = gradqBnd(:,:,1,l,1,j)
+                    else if (bC(1) .eq. 2) then
+                        y = (real(j-1) + xiGPN(l))*dx(2) 
+                        QR = qBnd(:,2,l,IMAX,j); gradQR = gradqBnd(:,:,2,l,IMAX,j)
+                        QL = -QR + 2.0*sin(m_pi*y); gradQL = gradQR
+                    else if (bC(1) .eq. 3) then ! Periodic
+                        QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
+                        QR = qBnd(:,1,l,1,j);    gradQR = gradqBnd(:,:,1,l,1,j)
+                    end if
+                    
                 else if (i .eq. IMAX+1) then ! Right boundary (Periodic)
-
-                    QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
-                    QR = qBnd(:,1,l,1,j);    gradQR = gradqBnd(:,:,1,l,1,j)
-
+                    
+                    if (bC(2) .eq. 1) then ! Neumann 
+                        QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
+                        QR = qBnd(:,2,l,IMAX,j); gradQR = gradqBnd(:,:,2,l,IMAX,j)
+                    else if (bC(2) .eq. 2) then ! Dirichlet  
+                        QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
+                        QR = -QL; gradQR = gradQL
+                    else if (bC(2) .eq. 3) then ! Periodic 
+                        QL = qBnd(:,2,l,IMAX,j); gradQL = gradqBnd(:,:,2,l,IMAX,j)
+                        QR = qBnd(:,1,l,1,j);    gradQR = gradqBnd(:,:,1,l,1,j)
+                    end if
+                    
                 else ! Internal faces
                     QL = qBnd(:,2,l,i-1,j); gradQL = gradqBnd(:,:,2,l,i-1,j)
                     QR = qBnd(:,1,l,i,j);   gradQR = gradqBnd(:,:,1,l,i,j)
@@ -53,16 +70,32 @@ subroutine solve_riemann_problem
 
             do k = 1, nDOF(1)
 
-                if (j .eq. 1) then ! Bottom boundary (Periodic)
-
-                    QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
-                    QR = qBnd(:,3,k,i,1);    gradQR = gradqBnd(:,:,3,k,i,1)
-
-                else if (j .eq. JMAX+1) then ! Top boundary (Periodic)
-
-                    QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
-                    QR = qBnd(:,3,k,i,1);    gradQR = gradqBnd(:,:,3,k,i,1)
-
+                if (j .eq. 1) then ! Bottom boundary
+                    
+                    if (bC(3) .eq. 1) then ! Neumann 
+                        QL = qBnd(:,3,k,i,1); gradQL = gradqBnd(:,:,3,k,i,1)
+                        QR = qBnd(:,3,k,i,1); gradQR = gradqBnd(:,:,3,k,i,1)
+                    else if (bC(3) .eq. 2) then ! Dirichlet  
+                        QR = qBnd(:,3,k,i,1); gradQR = gradqBnd(:,:,3,k,i,1)
+                        QL = -QR; gradQL = gradQR
+                    else if (bC(3) .eq. 3) then ! Periodic
+                        QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
+                        QR = qBnd(:,3,k,i,1);    gradQR = gradqBnd(:,:,3,k,i,1)
+                    end if
+                
+                else if (j .eq. JMAX+1) then ! Top boundary 
+                    
+                    if (bC(4) .eq. 1) then ! Neumann 
+                        QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
+                        QR = qBnd(:,4,k,i,JMAX); gradQR = gradqBnd(:,:,4,k,i,JMAX)
+                    else if (bC(4) .eq. 2) then ! Dirichlet
+                        QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
+                        QR = -QL; gradQR = gradQL
+                    else if (bC(4) .eq. 3) then ! Periodic 
+                        QL = qBnd(:,4,k,i,JMAX); gradQL = gradqBnd(:,:,4,k,i,JMAX)
+                        QR = qBnd(:,3,k,i,1);    gradQR = gradqBnd(:,:,3,k,i,1)
+                    end if
+                
                 else ! Internal faces
                     QL = qBnd(:,4,k,i,j-1); gradQL = gradqBnd(:,:,4,k,i,j-1)
                     QR = qBnd(:,3,k,i,j);   gradQR = gradqBnd(:,:,3,k,i,j)

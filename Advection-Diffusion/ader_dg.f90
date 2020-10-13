@@ -14,7 +14,7 @@ module ader_dg
     ! Can be modified by the user
     ! ---------------------------------------------------------------------------------------------------------
 
-    integer, parameter  :: N = 3      ! Polynomial degree of our approximation in space and time
+    integer, parameter  :: N = 1      ! Polynomial degree of our approximation in space and time
     integer, parameter  :: nDim = 2   ! The number of space dimensions that we actually want to simulate
     real, parameter     :: CFL = 0.9  ! The Courant-Friedrichs-Lewy number < 1
     integer, parameter  :: nVar = 1   ! The number of variables of the PDE system
@@ -49,6 +49,7 @@ module ader_dg
     real                :: time, tend                     ! Current time  and final time
     real, pointer       :: x(:,:,:)                       ! Coordinates of cell centers
     integer, parameter  :: nVtx = 2**nDim, nFac = 2*nDim  ! Number of vertices and faces per element
+    integer             :: bC(4)                          ! Boundary conditions on the four faces 
     character(len=200)  :: BaseFile                       ! Basic filename to write the results
 
     ! Some diagnostics                                        !
