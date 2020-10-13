@@ -23,7 +23,7 @@ program ADERDG
     do while (time .lt. tend)
 
         if(mod(timestep,WriteInterval) .eq. 0) then
-            !call write_data
+            call write_data
         end if
 
         ! Compute the time step size according to the CFL condition
